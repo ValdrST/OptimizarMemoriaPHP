@@ -162,7 +162,7 @@ rand(); // Es util pero no es la mejor opcion
  
  'soy una literal $' //esta es la mejor opcion si no se agregan variables dentro
  
- "Puedo ser o no una literal $variable" //Esta solo es buena si se agrega una varibable ($) pero ocupa proceso
+ "Puedo ser o no una literal $variable" //Esta solo es buena si se desea leer tambien una variable ($)
  
  ```
  
@@ -180,3 +180,81 @@ Siempre se debería utilizar una función para comprobar si existe una variable.
  
 En las comparaciones, la diferencia del operador === con el operador == es que este último hace una comprobación de tipos de variables antes. Si estás seguro de que son del mismo tipo, utiliza el primero. 
  
+ ### Comprobar uso de memoria y proceso
+
+Utiliza memory_get_usage() y microtime() para comprobar la velocidad y la memoria que consume tu código y poder optimizarlo mejor.
+ ```
+ memory_get_usage(); // Retorno la cantidad de memoria asignada a PHP
+ microtime(); // Devuelve el tiempo actual del servidor util para medir la velocidad
+ 
+ ```
+
+### Comparaciones
+
+Los if / else son siempre más rápidos que los switch / case.
+Las siguientes funciones son alias de las de su derecha. Utilizar la función de la izquierda es mucho más lento que usar la de la derecha:
+   - lentos | rapidos
+   - chop -> rtrim
+   - close -> closedir
+   - die -> exit
+   - dir -> getdir
+   - diskfreespace -> disk_free_space
+   - fputs -> fwrite
+   - ini_alter -> ini_set
+   - is_writeable -> is_writable
+   - join -> implode
+   - pos -> current
+   - rewind -> rewinddir
+   - strchr -> strstr
+   - sizeof -> count
+   
+### Incrementos
+
+Cuando incrementamos una variable del modo $i++ es más lento que si lo hacemos ++$i . La diferencia es que la primera forma primero usa su valor y luego lo incrementa, en cambio, la segunda primero la incrementa y luego la usa. La segunda forma es más rápida, puesto que utiliza 3 opcodes, en lugar de los 4 opcodes de la primera. Usarla cuando sea posible. 
+
+```
+
+++$i; // Mas rapido
+$i++; // mas lento
+
+```
+
+### Impresion de textos
+
+La función echo es más rápida que la función print, además de otras diferencias. 
+
+```
+
+echo "Impresion de texto"; // Esta es mas rapida
+
+print("Impresion de texto"); // Esta es mas lenta y retorna valor
+
+```
+ ### Evitar concatenaciones
+ 
+ Es mejor imprimir usando varios echo que concatenar texto y generar la salida
+ 
+```
+
+echo “Bienvenido”; echo $usuario; // Más rápido
+echo “Bienvenido”.$usuario; // Este es mas lento
+
+```
+
+### Substituir texto
+
+La manera mas rapida de substituir texto es con strtr y no con str_replace o preg_replace
+```
+
+$salida = strtr("abd","d","c"); // Más rápida
+$salida = str_replace("d","c","abd");
+$salida = preg_replace("/d/","c","abd");
+
+```
+
+
+### Ordenar resultados de BD
+
+Cuando se termine de hacer operaciones pesadas con una base de datos del tipo SQL es mejor ordenar los resultados haciendo uso de la funcion usort() que por medio del gestor SQL. 
+ 
+
