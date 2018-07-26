@@ -257,4 +257,6 @@ $salida = preg_replace("/d/","c","abd");
 
 Cuando se termine de hacer operaciones pesadas con una base de datos del tipo SQL es mejor ordenar los resultados haciendo uso de la funcion usort() que por medio del gestor SQL. 
  
+### Usar el cache alternativo de PHP (APC)
 
+El APC, o caché alternativo de PHP (por sus siglas en inglés de Alternative PHP Cache), es un código de operación de caché libre y abierto para PHP. Su objetivo es el de proporcionar un marco robusto, libre y abierto para optimizar código de PHP intermedio mediante el almacenamiento en caché. Hay un manual completo sobre como se puede usar este recurso valioso [aqui](https://secure.php.net/manual/es/book.apc.php)
