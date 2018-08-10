@@ -20,7 +20,7 @@
 - [Substituir texto](#substituir-texto).
 - [Ordenar resultados de BD](#ordenar-resultados-de-bd).
 - [Usar el cache alternativo de PHP (APC)](#usar-el-cache-alternativo-de-php).
-- [Usar un MPM en apache] (#usar-mpm-en-apache).
+- [Usar un MPM en apache](#usar-mpm-en-apache).
 
 ### Usar HTML ante PHP
 
