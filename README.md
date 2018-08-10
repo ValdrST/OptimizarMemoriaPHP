@@ -20,6 +20,7 @@
 - [Substituir texto](#substituir-texto).
 - [Ordenar resultados de BD](#ordenar-resultados-de-bd).
 - [Usar el cache alternativo de PHP (APC)](#usar-el-cache-alternativo-de-php).
+- [Usar un MPM en apache] (#usar-mpm-en-apache).
 
 ### Usar HTML ante PHP
 
@@ -261,3 +262,66 @@ Cuando se termine de hacer operaciones pesadas con una base de datos del tipo SQ
 ### Usar el cache alternativo de PHP
 
 El APC, o caché alternativo de PHP (por sus siglas en inglés de Alternative PHP Cache), es un código de operación de caché libre y abierto para PHP. Su objetivo es el de proporcionar un marco robusto, libre y abierto para optimizar código de PHP intermedio mediante el almacenamiento en caché. Hay un manual completo sobre como se puede usar este recurso valioso [aqui](https://secure.php.net/manual/es/book.apc.php)
+
+### Usar un MPM distinto al prefork en apache
+
+Se puede configurar un MPM en el servidor para tener un manejo de hilos(worker, event) en vez de procesos (prefork). Es conveniente crear hilos ya que los procesos se les asigna una cantidad mayor de memoria cada que se crea uno y los hilos comparten memoria consiguiendo asi un mayor ahorro y rendimiento en servicions con varios usuarios conectados de manera concurrente.
+
+#### MPM prefork
+
+Este es el mas estable y el que viene por defecto en los servidores apaches, hace uso de procesos y es facil de configurar la desventaja es que ocupa mas recursos. No requiere ninguna configuracion previa en el PHP para poder correr con este modo.
+
+#### MPM Worker
+
+Este modo pretende mejorar el rendimiento de prefork. hace uso de procesos y de hilos a la vez por lo que cada proceso genera un numero definido de hilos hijos que pueden manejar cada peticion de una manera mas eficiente. Las desventajas de este modo es que se requiere compilar PHP con la bandera ``--enable-maintainer-zts`` o configurarlo con php-fpm otra desventaja es que su configuracion es mas complicada y su baja tolerancia a fallos.
+
+#### MPM Event
+
+Este modo es una mejora del worker por lo que su instalacion es similar solo que este solo admite ser configurado bajo php-fpm.
+
+Para configurarlos se necesita saber que modo se tiene activo para esto se corre el comando ``httpd -V | grep MPM`` que mostrara el nombre de la configuracion activa. El siguiente paso es instalar php-fpm ``yum install php-fpm``
+Para que el servidor apache lo reconozca hay que agregar esta configuracion en ``/etc/httpd/conf.d/php-fpm.conf`` si no existe el archivo hay que crearlo.
+Dentro de php-fpm.conf se agregan las siguientes lineas.
+```
+Action fcgi-php-fpm /fcgi-php-fpm virtual
+Alias /fcgi-php-fpm /fcgi-php-fpm
+```
+Una vez que tenemos esto se procede a modificar ``etc/httpd/conf.modules.d/00-mpm.conf``. solo se debe descomentar la linea donde aparece el modulo MPM que deseas tener activo. Ojo solo se puede tener uno activo a la vez.
+
+```
+# Select the MPM module which should be used by uncommenting exactly
+# one of the following LoadModule lines:
+
+# prefork MPM: Implements a non-threaded, pre-forking web server
+# See: http://httpd.apache.org/docs/2.4/mod/prefork.html
+#LoadModule mpm_prefork_module modules/mod_mpm_prefork.so
+
+# worker MPM: Multi-Processing Module implementing a hybrid
+# multi-threaded multi-process web server
+# See: http://httpd.apache.org/docs/2.4/mod/worker.html
+#
+LoadModule mpm_worker_module modules/mod_mpm_worker.so
+
+# event MPM: A variant of the worker MPM with the goal of consuming
+# threads only for connections with active processing
+# See: http://httpd.apache.org/docs/2.4/mod/event.html
+#
+#LoadModule mpm_event_module modules/mod_mpm_event.so
+```
+
+Ahora se tiene que crear el archivo de configuracion del mpm donde se decidira cuantos hilos se van a crear con cada peticion entre otras cosas. En el caso de worker seria ``/etc/httpd/conf.modules.d/10-worker.conf`` y dentro de el se crea algo asi.
+
+```
+<IfModule mpm_worker_module>
+    ServerLimit              16
+    StartServers              4
+    MinSpareThreads          64
+    MaxSpareThreads         256
+    ThreadsPerChild          64
+    MaxClients              512
+    MaxRequestsPerChild    1024
+</IfModule>
+```
+Se puede consultar en la documentacion oficial de apache para saber que hace cada configuracion.
+Tambien se puede configurar la configuracion del php-fpm donde se definen los hilos que va a manejar, el archivo se encuentra en 
+``/etc/php-fpm.d/www.conf ``.
